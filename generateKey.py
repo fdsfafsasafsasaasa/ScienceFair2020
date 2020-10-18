@@ -3,36 +3,33 @@ from math import gcd
 
 import random
 import multiprocessing 
-print("Generating P and Q...")
-p, q = number.getPrime(2048), number.getPrime(2048)
-print("Generating N...")
-n = p*q
-print("Generating M and C...")
-m, c = random.randint(0, n-1), random.randint(0, n-1)
 
-print("Generating E...")
-e = random.randint(3, n-1)
+class RSA:
+    def __init__(self, procCount=4): 
+        self.p, self.q = number.getPrime(2048), number.getPrime(2048)
+        self.n = self.p*self.q
+        self.m, self.c = random.randint(0, self.n-1), random.randint(0, self.n-1)
+        self.e = random.randint(3, self.n-1)
+        while not self.e % 2 == 0 and not gcd(self.p-1, self.q-1) == self.e:
+            self.e = random.randint(3, self.n-1)
+        self.procCount = procCount
+        self.procs = []
+        self.ans = 0
 
-while not e % 2 == 0 and not gcd(p-1, q-1) == e:
-    e = random.randint(3, n-1)
-    # print(e)
+    def getCProcess(self):
+        for proc in range(self.procCount):
+            self.procs.append(multiprocessing.Process(target=self.getC, args=(self.m//4, self.e//4, self.n//4)))
 
-# print(f"p: {p}\nq: {q}\nn: {n}\nm: {m}\nc: {c}\ne: {e}")
-# print(e)
-ans = 0
-def getC(m, e, n):
-    print(f"Generating C with values {m}, {e}, {n}")
-    global ans
-    ans += (m**e) % n
+        for proc in self.procs:
+            proc.start()
+        for proc in self.procs:
+            proc.join()
 
-threads = []
-for i in range(4):
-    threads.append(multiprocessing.Process(target=getC, args=(m//4, e//4, n//4)))
+        print(f"FINISHED: {self.ans}")
 
-for i in threads:
-    i.start()
+    def getC(self, m, e, n, ans=0):
+        print(f"Generating C")
+        self.ans += (m**e) % n
 
-for i in threads:
-    i.join()
-
-print(ans)
+myKey = RSA(6)
+myKey.getCProcess()
