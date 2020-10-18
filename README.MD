@@ -4,7 +4,7 @@
 http://mathaware.org/mam/06/Kaliski.pdf
 
 
-Steps to generate RSA key
+Steps to generate RSA key:
 Generate random primes: p and q
 Generate n: p*q
 Generate M and C: 
